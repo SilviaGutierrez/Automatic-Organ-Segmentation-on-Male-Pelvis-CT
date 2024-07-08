@@ -1,0 +1,94 @@
+function performDataAugmentation(images, labels, path)
+    % performDataAugmentation - Perform data augmentation on training images and labels.
+    %
+    % Syntax: performDataAugmentation(images, labels, path)
+    %
+    % Inputs:
+    %   images - Cell array of file paths to training images.
+    %   labels - Cell array of file paths to corresponding training labels.
+    %   path   - Path to the main experiment directory.
+    %
+    % This function applies data augmentation techniques (e.g., rotation, flipping)
+    % to the training images and labels, and saves the augmented data to disk.
+    % The augmented data will be used for training the deep learning model.
+    %
+    % Example:
+    %   performDataAugmentation(TrainImages, TrainLabels, path);
+
+
+    % COPIAR EL CODIGO AQUI
+    %Define directories containing original Train Images and Labels
+TrainImagesDir=fullfile(images);
+TrainLabelsDir=fullfile(labels);
+path1=[path '\AugmentedTrainImages'];
+path2=[path '\AugmentedTrainLabels'];
+
+% Define output directories for augmented Train Images and Labels
+outputImagesDir = path1;
+outputLabelsDir = path2;  
+% Create output directories if they don't exist
+if ~exist(outputImagesDir, 'dir')
+    mkdir (outputImagesDir);
+end
+if ~exist(outputLabelsDir, 'dir')
+    mkdir(outputLabelsDir);
+end
+
+% Define augmentation parameters
+numAugmentations = 3;  % Number of augmented images to generate
+
+% Perform data augmentation
+for i = 1:numel(TrainImagesDir)
+    % Load original Train Image and corresponding Train Label
+    TrainImages = dicomread(TrainImagesDir{i});
+    TrainLabels = dicomread(TrainLabelsDir{i});
+    
+    % Perform augmentation for each original Train image and Label
+    for j = 1:numAugmentations
+        % Apply augmentation techniques (e.g., flipping, rotation, resizing)
+        % You can use the same augmentation techniques as shown in the previous example
+        
+        % Here, let's assume we apply the same augmentation as before for demonstration
+        
+        % Randomly select augmentation type
+         % 1: Flip, 2: Rotation, 3: Translation
+        
+        switch j
+            case 1
+                % Randomly flip image and mask horizontally or vertically
+                flipDirection = randi([1, 2]);  % 1: Horizontal flip, 2: Vertical flip
+                augmentedTrainImages = flip(TrainImages, flipDirection);
+                augmentedTrainLabels = flip(TrainLabels, flipDirection);
+            case 2
+                % Randomly rotate image and mask by a degree between -15 and 15
+                rotationAngle = randi([-45, 45]);
+                augmentedTrainImages = imrotate(TrainImages, rotationAngle, 'bilinear', 'crop');
+                augmentedTrainLabels = imrotate(TrainLabels, rotationAngle, 'nearest', 'crop');
+            case 3
+                % Random traslation image and mask by a scale factor between 0.8 and 1.2
+                
+                max_translation = 50;
+                fill_value=0;
+                % Generate random translation amounts
+                x_translation = randi([-max_translation, max_translation]);
+                y_translation = randi([-max_translation, max_translation]);
+
+                % Apply random translation
+                augmentedTrainImages = imtranslate(TrainImages, [x_translation, y_translation],'FillValues', fill_value);
+                augmentedTrainLabels = imtranslate(TrainLabels, [x_translation, y_translation],'FillValues', fill_value);
+                
+                
+        end
+        
+        % Save augmented images and masks
+        [~, filename, ext] = fileparts(TrainImagesDir{i});
+        outputImagesFilename = fullfile(outputImagesDir, [filename, '_aug', num2str(j), ext]);
+        dicomwrite(augmentedTrainImages,outputImagesFilename);
+        
+        outputLabelsFilename = fullfile(outputLabelsDir, [filename, '_aug', num2str(j), ext]);
+        dicomwrite(augmentedTrainLabels,outputLabelsFilename);
+    end
+    
+    % ACOMODAR LA FUNCION DE ACUERDO A LAS NECESIDADES
+
+end
