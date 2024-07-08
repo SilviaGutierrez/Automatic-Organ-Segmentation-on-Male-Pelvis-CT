@@ -61,14 +61,14 @@ function [diceResult,haussdorffResult,IoUResult,TrainingTime,Time4Validation]=ma
         fprintf('Data augmentation complete.\n\n');
         
         % Load augmented train image and train label data
-    fprintf('Loading image and label data...\n'); %%% modificar
-    AugTrainImgDir = fullfile(path, 'AugmentedTrainImages');
-    AugTrainLabDir = fullfile(path, 'AugmentedTrainLabels');
-    AugTrainImagesDs = imageDatastore(AugTrainImgDir, 'FileExtensions', '.dcm', 'ReadFcn', @(x) dicomread(x));
-    AugTrainLabelsDs = imageDatastore(AugTrainLabDir, 'FileExtensions', '.dcm', 'ReadFcn', @(x) dicomread(x));
-    AugTrainImages=AugTrainImagesDs.Files;
-    AugTrainLabels=AugTrainLabelsDs.Files;
-    fprintf('Image and label data loaded successfully.\n\n');
+        fprintf('Loading image and label data...\n'); %%% modificar
+        AugTrainImgDir = fullfile(path, 'AugmentedTrainImages');
+        AugTrainLabDir = fullfile(path, 'AugmentedTrainLabels');
+        AugTrainImagesDs = imageDatastore(AugTrainImgDir, 'FileExtensions', '.dcm', 'ReadFcn', @(x) dicomread(x));
+        AugTrainLabelsDs = imageDatastore(AugTrainLabDir, 'FileExtensions', '.dcm', 'ReadFcn', @(x) dicomread(x));
+        AugTrainImages=AugTrainImagesDs.Files;
+        AugTrainLabels=AugTrainLabelsDs.Files;
+        fprintf('Image and label data loaded successfully.\n\n');
     
         % Setup training and validation datastores
         fprintf('Setting up datastores...\n');
@@ -76,31 +76,31 @@ function [diceResult,haussdorffResult,IoUResult,TrainingTime,Time4Validation]=ma
         [ValDs,ValImgDs,ValLabelDs] = setupValDatastore(ValImages, ValLabels);
         fprintf('Datastores set up successfully.\n\n');
 
-        % Define and train the deep learning model
-        fprintf('Defining and training the deep learning model...\n');
-        lgraph = deeplabv3plusLayers([512, 512], 2, 'resnet18');
-        options = setupTrainingOptions(ValDs);
+       % Define and train the deep learning model
+       fprintf('Defining and training the deep learning model...\n');
+       lgraph = deeplabv3plusLayers([512, 512], 2, 'resnet18');
+       options = setupTrainingOptions(ValDs);
 
-        fprintf('Training network...\n');
+       fprintf('Training network...\n');
         
-        [TrainingTime,path_folder_iteration]=train(TrainDs,lgraph, options,path,k);
-        TrainingTime(k) = TrainingTime;
-        fprintf('Training complete.\n\n');
+       [TrainingTime,path_folder_iteration]=train(TrainDs,lgraph, options,path,k);
+       TrainingTime(k) = TrainingTime;
+       fprintf('Training complete.\n\n');
 
         
        % Perform validation and calculate metrics
-        fprintf('Performing validation and calculating metrics...\n');
-        [DiceResult, HaussdorffDist, Iou, validationTimes] = calculateMetrics(ValImgDs,ValLabelDs,path_folder_iteration);
-        diceResult{k} = DiceResult;
-        haussdorffResult{k} = HaussdorffDist;
-        IoUResult{k} = Iou;
-        Time4Validation{k} = num2cell(validationTimes);
-        fprintf('Validation complete.\n\n');
+       fprintf('Performing validation and calculating metrics...\n');
+       [DiceResult, HaussdorffDist, Iou, validationTimes] = calculateMetrics(ValImgDs,ValLabelDs,path_folder_iteration);
+       diceResult{k} = DiceResult;
+       haussdorffResult{k} = HaussdorffDist;
+       IoUResult{k} = Iou;
+       Time4Validation{k} = num2cell(validationTimes);
+       fprintf('Validation complete.\n\n');
 
-        % Clean up temporary augmentation folders
-        fprintf('Cleaning up temporary augmentation folders...\n');
-        cleanupTemporaryFolders(path);
-        fprintf('Cleanup complete.\n\n');
+       % Clean up temporary augmentation folders
+       fprintf('Cleaning up temporary augmentation folders...\n');
+       cleanupTemporaryFolders(path);
+       fprintf('Cleanup complete.\n\n');
     end
 
     % Display completion message
