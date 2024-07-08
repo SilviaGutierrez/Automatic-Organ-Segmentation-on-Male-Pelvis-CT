@@ -1,0 +1,34 @@
+function options = setupTrainingOptions(valDs)
+    % setupTrainingOptions - Define training options for the deep learning model.
+    %
+    % Syntax: options = setupTrainingOptions(valDs)
+    %
+    % Inputs:
+    %   valDs - Validation pixelLabelImageDatastore.
+    %
+    % Outputs:
+    %   options - Training options (trainingOptions) for the deep learning model.
+    %
+    % This function defines the training options (trainingOptions) for training
+    % the deep learning model using the provided validation data.
+    
+    % Define training options
+    options = trainingOptions('adam', ...  % Optimization solver (e.g., 'adam', 'sgdm')
+        'MaxEpochs', 10, ...  % Number of training epochs
+        'InitialLearnRate', 1e-4, ...  % Initial learning rate
+        'LearnRateSchedule', 'piecewise', ...  % Learning rate schedule (e.g., 'piecewise', 'exponential')
+        'LearnRateDropPeriod', 20, ...  % Period for dropping the learning rate
+        'LearnRateDropFactor', 0.95, ...  % Factor for dropping the learning rate
+        'ValidationData', valDs, ...  % Validation pixelLabelImageDatastore
+        'ValidationFrequency', 500, ...  % Frequency of validation during training
+        'Plots', 'training-progress', ...  % Plot training progress
+        'Verbose', false, ...  % Display training progress
+        'ValidationPatience', Inf, ...  % Patience for validation improvement
+        'Shuffle', 'every-epoch', ...  % Shuffle data every epoch
+        'CheckpointPath', tempdir, ...  % Path for saving checkpoints
+        'MiniBatchSize', 1);  % Mini-batch size for training
+    
+    % Additional options can be added based on specific training requirements
+    % For example:
+    % options.ExecutionEnvironment = 'gpu';  % Train on GPU if available
+end
