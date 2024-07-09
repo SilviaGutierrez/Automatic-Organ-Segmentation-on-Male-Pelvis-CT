@@ -1,5 +1,5 @@
-function [diceResult,haussdorffResult,IoUResult,TrainingTime,Time4Validation]=mainProstateSegmentation(path)
-    % mainProstateSegmentation - Perform prostate segmentation using deep learning.
+function [diceResult,haussdorffResult,IoUResult,TrainingTime,Time4Validation]=mainExperiment1(path)
+    % mainExperiment1 - Perform prostate segmentation using deep learning.
     %
     % Syntax: mainProstateSegmentation(path)
     %
