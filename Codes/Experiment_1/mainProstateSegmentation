@@ -1,7 +1,7 @@
 function [diceResult,haussdorffResult,IoUResult,TrainingTime,Time4Validation]=mainExperiment1(path)
     % mainExperiment1 - Perform prostate segmentation using deep learning.
     %
-    % Syntax: mainProstateSegmentation(path)
+    % Syntax: mainExperiment1(path)
     %
     % Inputs:
     %   path - Path to the main experiment directory containing 'Images' and 'Labels' folders.
