@@ -28,17 +28,16 @@ function [diceResult,haussdorffResult,IoUResult,TrainingTime,Time4Validation]=ma
     subFolders_Labels = dir(pathLabelsDir);
 
 % Filter the list to include only directories and exclude '.' and '..' entries
-   subFolders_Images = subFolders_Images([subFolders_Images.isdir] & ~ismember({subFolders_Images.name}, {'.', '..'}));
-   subFolders_Labels = subFolders_Labels([subFolders_Labels.isdir] & ~ismember({subFolders_Labels.name}, {'.', '..'}));
+    subFolders_Images = subFolders_Images([subFolders_Images.isdir] & ~ismember({subFolders_Images.name}, {'.', '..'}));
+    subFolders_Labels = subFolders_Labels([subFolders_Labels.isdir] & ~ismember({subFolders_Labels.name}, {'.', '..'}));
 
 % Extract the names of the subfolders in the 'Images' and ‘Labels’ directories
-   subFolders_Images_Names = {subFolders_Images.name};
-   subFolders_Labels_Names = {subFolders_Labels.name};
+    subFolders_Images_Names = {subFolders_Images.name};
+    subFolders_Labels_Names = {subFolders_Labels.name};
 
 % Create k-fold cross-validation partitions based on folders.
     fprintf('Performing k-fold cross-validation...\n'); 
     numSubFolders_Images = numel(subFolders_Images_Names);
-    
     c = cvpartition(numSubFolders_Images, 'KFold', 10);
     TrainIdx = cell(c.NumTestSets, 1);
     ValIdx = cell(c.NumTestSets, 1);
