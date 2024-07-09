@@ -65,7 +65,7 @@ for k = 1: c.NumTestSets
 
 % Split data into training and validation datastore
 
-% Setup TrainDatastore (include performe data augmentation)
+% Setup TrainDatastore (include performe train data augmentation)
      [~,~,TrainDS]=setupTrainDatastore(subFolders_Images_Names,subFolders_Labels_Names,selectedIndices_Train,path,pathImagesDir,pathLabelsDir);
 
 % Setup ValDatastore
