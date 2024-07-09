@@ -1,0 +1,105 @@
+function [diceResult,haussdorffResult,IoUResult,TrainingTime,Time4Validation]=mainExperiment2(path)
+    % mainExperiment2 - Perform prostate segmentation using deep learning.
+    %
+    % Syntax: mainExperiment2(path)
+    %
+    % Inputs:
+    %   path - Path to the main experiment directory containing 'Images' and      'Labels' folders.
+    % The 'Images' folder consists of a set of subfolders, each containing the images of an individual patient.
+    % The 'Labels' folder consists of a set of subfolders, each containing the labels of an individual patient.
+    
+    %   Example: path='C:\Users\silva\Desktop\Experiment_2';
+
+    % Author information
+    fprintf('Author: Silvia Ramos (gutierrezramossilvia@gmail.com)\n');
+    fprintf('Co-author: Miguel Altuve (miguelaltuve@gmail.com)\n');
+    fprintf('2024\n\n');
+
+    % Display experiment directory
+    fprintf('Experiment directory: %s\n', path);
+
+% Load image and label data
+    fprintf('Loading image and label data...\n');
+    ImgDir = fullfile(path, 'Images');
+    LabDir = fullfile(path, 'Labels');
+
+% Get the list of subfolders in the 'Images' and ‘Labels’ directories
+    subFolders_Images = dir(pathImagesDir);
+    subFolders_Labels = dir(pathLabelsDir);
+
+% Filter the list to include only directories and exclude '.' and '..' entries
+   subFolders_Images = subFolders_Images([subFolders_Images.isdir] & ~ismember({subFolders_Images.name}, {'.', '..'}));
+   subFolders_Labels = subFolders_Labels([subFolders_Labels.isdir] & ~ismember({subFolders_Labels.name}, {'.', '..'}));
+
+% Extract the names of the subfolders in the 'Images' and ‘Labels’ directories
+   subFolders_Images_Names = {subFolders_Images.name};
+   subFolders_Labels_Names = {subFolders_Labels.name};
+
+% Create k-fold cross-validation partitions based on folders.
+    fprintf('Performing k-fold cross-validation...\n'); 
+    numSubFolders_Images = numel(subFolders_Images_Names);
+    
+    c = cvpartition(numSubFolders_Images, 'KFold', 10);
+    TrainIdx = cell(c.NumTestSets, 1);
+    ValIdx = cell(c.NumTestSets, 1);
+for k = 1:c.NumTestSets
+    TrainIdx{k} = training(c, k);
+    ValIdx{k} = test(c, k); 
+end
+    save('cross_validation_indices.mat', 'TrainIdx', 'ValIdx');
+    fprintf('Number of folds: %d\n\n', c.NumTestSets);
+
+% Variable memory allocation
+    diceResult = cell(c.NumTestSets, 1);
+    haussdorffResult = cell(c.NumTestSets, 1);
+    IoUResult = cell(c.NumTestSets, 1);
+    TrainTime = zeros(c.NumTestSets, 1); % Time during the training phase for each iteration
+    Time4Validation = cell(c.NumTestSets, 1); % Time during the validation phase for each iteration
+
+for k = 1: c.NumTestSets
+    fprintf('Iteration %d/%d\n', k, c.NumTestSets);
+
+% Get training and validation indices for the current fold
+    selectedIndices_Train = TrainIdx{k};
+    selectedIndices_Val = ValIdx{k};
+
+% Split data into training and validation datastore
+
+% Setup TrainDatastore (include performe data augmentation)
+     [~,~,TrainDS]=setupTrainDatastore(subFolders_Images_Names,subFolders_Labels_Names,selectedIndices_Train,path,pathImagesDir,pathLabelsDir);
+
+% Setup ValDatastore
+     [ValImagesDS,ValLabelsDS,ValDS]=setupValDatastore(subFolders_Images_Names,subFolders_Labels_Names,selectedIndices_Val,pathImagesDir,pathLabelsDir);
+
+% Define and train the deep learning model
+        fprintf('Defining and training the deep learning model...\n');
+        lgraph = deeplabv3plusLayers([512, 512], 2, 'resnet18');
+        options = setupTrainingOptions(ValDS);
+
+ fprintf('Training network...\n');
+ 
+  
+        [TrainingTime,path_folder_iteration] = train(TrainDS, lgraph, options,path,k);
+        TrainTime(k)=TrainingTime;
+        fprintf('Training complete.\n\n');
+
+  
+   % Perform validation and calculate metrics
+        fprintf('Performing validation and calculating metrics...\n');
+        [DiceResult, HaussdorffDist, Iou, validationTimes] = calculateMetrics(ValImagesDS,ValLabelsDS,path_folder_iteration);
+        diceResult{k} = DiceResult;
+        haussdorffResult{k} = HaussdorffDist;
+        IoUResult{k} = Iou;
+        Time4Validation{k} = num2cell(validationTimes);
+        fprintf('Validation complete.\n\n');
+
+        % Clean up temporary augmentation folders
+        fprintf('Cleaning up temporary augmentation folders...\n');
+        cleanupTemporaryFolders(path);
+        fprintf('Cleanup complete.\n\n');
+end
+
+    % Display completion message
+    fprintf('Prostate segmentation process completed successfully.\n');
+
+end
