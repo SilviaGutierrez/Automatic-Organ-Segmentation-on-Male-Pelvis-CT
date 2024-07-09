@@ -12,8 +12,8 @@ for i = 1:numel(selectedFolders_TrainImages)
     SelectedFolderPath_TrainImages = fullfile(pathImagesDir,     selectedFolders_TrainImages{i});
     ImagesTrainDatastores{i} = imageDatastore(SelectedFolderPath_TrainImages,'FileExtensions','.dcm','ReadFcn',@(x) dicomread(x));
     SelectedFolderPath_TrainLabels = fullfile(pathLabelsDir, selectedFolders_TrainLabels{i});
-    classNames=["Fondo","Prostata"]; 
-    pixelLabelID = [0 1];
+    classNames=["Fondo","Prostata"]; % Define class names
+    pixelLabelID = [0, 1];  % Define pixel label IDs
     LabelsTrainDatastores{i} = pixelLabelDatastore(SelectedFolderPath_TrainLabels,classNames,pixelLabelID,'FileExtensions','.dcm','ReadFcn',@(x) uint8(dicomread(x)));
 end
 
