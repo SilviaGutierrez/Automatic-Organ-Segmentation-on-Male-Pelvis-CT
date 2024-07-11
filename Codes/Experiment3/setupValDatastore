@@ -1,0 +1,50 @@
+function [ValImagesDS, ValLabelsDS, ValDS] = setupValDatastore(subFolders_Images_Names, subFolders_Labels_Names, selectedIndices_Val, pathImagesDir, pathLabelsDir)
+    % Select folders for validation based on provided indices
+    selectedFolders_ValImages = subFolders_Images_Names(selectedIndices_Val);
+    selectedFolders_ValLabels = subFolders_Labels_Names(selectedIndices_Val);
+
+    % Initialize cell arrays to store imageDatastores and pixelLabelDatastores for validation
+    ImagesValDatastores = cell(1, numel(selectedFolders_ValImages));
+    LabelsValDatastores = cell(1, numel(selectedFolders_ValLabels));
+
+    % Create imageDatastore and pixelLabelDatastore for each selected validation folder
+    for i = 1:numel(selectedFolders_ValImages)
+        % Create imageDatastore for images
+        SelectedFolderPath_ValImages = fullfile(pathImagesDir, selectedFolders_ValImages{i});
+        ImagesValDatastores{i} = imageDatastore(SelectedFolderPath_ValImages, 'FileExtensions', '.dcm', 'ReadFcn', @(x) dicomread(x));
+
+        % Create pixelLabelDatastore for labels
+        SelectedfolderPath_ValLabels = fullfile(pathLabelsDir, selectedFolders_ValImages{i});
+        classNames = ["Fondo","Vejiga","Recto","Prostata"]; % Class names
+        pixelLabelID = [0 1 2 3];
+        LabelsValDatastores{i} = pixelLabelDatastore(SelectedfolderPath_ValLabels, classNames, pixelLabelID, 'FileExtensions', '.dcm', 'ReadFcn', @(x) uint8(dicomread(x)));
+    end
+
+    % Initialize arrays to collect all file paths from each datastore
+    allValFilesImages = {};
+    allValFilesLabels = {};
+
+    % Collect all file paths from each imageDatastore and pixelLabelDatastore
+    for i = 1:numel(ImagesValDatastores)
+        allValFilesImages = [allValFilesImages; ImagesValDatastores{i}.Files];
+        allValFilesLabels = [allValFilesLabels; LabelsValDatastores{i}.Files];
+    end
+
+    % Create a single imageDatastore and pixelLabelDatastore for all validation images and labels
+    ValImagesDS = imageDatastore(allValFilesImages, 'FileExtensions', '.dcm', 'ReadFcn', @(x) dicomread(x));
+    ValLabelsDS = pixelLabelDatastore(allValFilesLabels, classNames, pixelLabelID, 'FileExtensions', '.dcm', 'ReadFcn', @(x) uint8(dicomread(x)));
+
+    % Get file paths for validation images and labels
+    ValImages = ValImagesDS.Files;
+    ValLabels = ValLabelsDS.Files;
+
+    % Create imageDatastore and pixelLabelDatastore for the validation set
+    ValmagesDS = imageDatastore(ValImages, 'FileExtensions', '.dcm', 'ReadFcn', @(x) dicomread(x));
+    ValLabelsDS = pixelLabelDatastore(ValLabels, classNames, pixelLabelID, 'FileExtensions', '.dcm', 'ReadFcn', @(x) uint8(dicomread(x)));
+
+    % Define the output image size
+    imageSize = [512, 512];
+
+    % Create pixelLabelImageDatastore for validation set
+    ValDS = pixelLabelImageDatastore(ValmagesDS, ValLabelsDS, 'OutputSize', imageSize, 'ColorPreprocessing', 'gray2rgb');
+end
