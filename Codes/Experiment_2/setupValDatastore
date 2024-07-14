@@ -15,7 +15,7 @@ function [ValImagesDS, ValLabelsDS, ValDS] = setupValDatastore(subFolders_Images
 
         % Create pixelLabelDatastore for labels
         SelectedfolderPath_ValLabels = fullfile(pathLabelsDir, selectedFolders_ValImages{i});
-        classNames = ["Fondo", "Prostata"]; % Class names
+        classNames = ["Background", "Prostate"]; % Class names
         pixelLabelID = [0 1];
         LabelsValDatastores{i} = pixelLabelDatastore(SelectedfolderPath_ValLabels, classNames, pixelLabelID, 'FileExtensions', '.dcm', 'ReadFcn', @(x) uint8(dicomread(x)));
     end
