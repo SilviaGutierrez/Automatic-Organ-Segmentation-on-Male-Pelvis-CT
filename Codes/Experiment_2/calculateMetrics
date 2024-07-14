@@ -52,7 +52,7 @@ function [DiceResult, HaussdorffDist, Iou, validationTimes] = calculateMetrics(V
         % Calculate Dice coefficient
         DiceResult(i,:) = dice(label, predictedLabel);
 
-        % Calculate Hausdorff distance (example, replace with actual function)
+        % Calculate Hausdorff distance 
         HaussdorffDist(i) = HausdorffDist(double(label), double(predictedLabel));
 
         % Calculate Intersection over Union (IoU)
