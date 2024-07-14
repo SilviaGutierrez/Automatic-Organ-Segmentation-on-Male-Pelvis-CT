@@ -1,0 +1,23 @@
+function main_compute_statistics()
+% Main function to compute statistic test on Dice and Hausdorff for all experiments
+% Authors: Silvia Ramos, gutierrezramossilvia@gmail.com;
+%          Miguel Altuve, miguelaltuve@gmail.com ;
+% Jun 2024
+
+clc;
+clear all;
+close all;
+% loading data struc with fields: dice and Hausdorff
+load data.mat;
+
+% Compute statistic test on Dice for all experiments
+p_Dice = compute_statistics(data.dice,'Dice');
+% Display adjusted p-values (triangular matrix for clarity)
+disp('Dice - Adjusted p-values (Wilcoxon signed-rank test with Bonferroni correction):')
+disp(p_Dice)
+
+% Compute statistic test on Haussdorff for all experiments
+p_Hausdorff = compute_statistics(data.Haussdorff,'Hausdorff');
+% Display adjusted p-values (triangular matrix for clarity)
+disp('Hausdorff - Adjusted p-values (Wilcoxon signed-rank test with Bonferroni correction):')
+disp(p_Hausdorff)
