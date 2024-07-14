@@ -85,9 +85,9 @@ for k = 1: c.NumTestSets
   
    % Perform validation and calculate metrics
         fprintf('Performing validation and calculating metrics...\n');
-        [DiceResult, HaussdorffDist, Iou, validationTimes] = calculateMetrics(ValImagesDS,ValLabelsDS,path_folder_iteration);
+        [DiceResult, hd_distances, Iou, validationTimes] = calculateMetrics(ValImagesDS,ValLabelsDS,path_folder_iteration);
         diceResult{k} = DiceResult;
-        haussdorffResult{k} = HaussdorffDist;
+        haussdorffResult{k} = hd_distances;
         IoUResult{k} = Iou;
         Time4Validation{k} = num2cell(validationTimes);
         fprintf('Validation complete.\n\n');
