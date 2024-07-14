@@ -1,7 +1,7 @@
-function [DiceResult, HaussdorffDist, Iou, validationTimes] = calculateMetrics(ValImagesDS, ValLabelsDS, path_folder_iteration)
+function [DiceResult, hd_distances, Iou, validationTimes] = calculateMetrics(ValImagesDS, ValLabelsDS, path_folder_iteration)
     % calculateMetrics - Calculate evaluation metrics for the trained network.
     %
-    % Syntax: [diceResult, haussdorffDist, iou, validationTimes] = calculateMetrics(valLabels, valDs, path_folder_iteration)
+    % Syntax: [diceResult, hd_distances, iou, validationTimes] = calculateMetrics(valLabels, valDs, path_folder_iteration)
     %
     % Inputs:
     %   valLabels           - Cell array of file paths to validation labels.
@@ -26,7 +26,7 @@ function [DiceResult, HaussdorffDist, Iou, validationTimes] = calculateMetrics(V
     % Initialize arrays for metrics and validation times
     numSamples = numel(ValImagesDS.Files);
     DiceResult = zeros(numSamples, 4);
-    HaussdorffDist = zeros(numSamples, 1);
+    hd_distancees = zeros(numSamples, 1);
     Iou = zeros(numSamples, 4);
     validationTimes = zeros(numSamples, 2);
 
@@ -52,8 +52,15 @@ function [DiceResult, HaussdorffDist, Iou, validationTimes] = calculateMetrics(V
         % Calculate Dice coefficient
         DiceResult(i,:) = dice(label, predictedLabel);
 
-        % Calculate Hausdorff distance (example, replace with actual function)
-        HaussdorffDist(i) = HausdorffDist(double(label), double(predictedLabel));
+        % Calculate Hausdorff distance 
+        num_masks = 3; (prostate, bladder, and rectum)
+        hd_distances=zeros(num_masks,1);
+        for j = 1:num_masks
+            mask1 = (double(label) == j);
+            mask2 = (double(predictedLabel) == j);
+            hd_distances(j)=HausdorffDist(mask1, mask2);
+        end
+        
 
         % Calculate Intersection over Union (IoU)
         Iou(i,:) = jaccard(label, predictedLabel);
