@@ -1,0 +1,51 @@
+function p_adjusted = compute_statistics(data,Name_Metric)
+% Compute statistic test on Dice and Hausdorff for all experiments
+% Authors: Silvia Ramos, gutierrezramossilvia@gmail.com;
+%          Miguel Altuve, miguelaltuve@gmail.com ;
+% Jun 2024
+
+
+% Perform the Friedman test
+[p, ~] = friedman(data);
+
+% Display the p-value
+disp('Friedman Test p-value:')
+disp(p)
+
+% Interpret the results
+if p < 0.05
+    disp('There is a statistically significant difference across experiments.')
+    % Number of experiments
+    num_experiments = size(data, 2);
+
+    % Pre-allocate matrix for adjusted p-values
+    p_adjusted = zeros(num_experiments, num_experiments);
+
+    % Loop through all experiment pairs
+    for i = 1:(num_experiments-1)
+        for j = (i+1):num_experiments
+            % Perform Wilcoxon signed-rank test
+            [p, ~] = signrank(data(:,i), data(:,j));
+
+            % Adjust p-value with Bonferroni correction
+            p_adjusted(i,j) = p * (num_experiments * (num_experiments - 1)) / 2;
+        end
+    end
+
+else
+    disp('There is no statistically significant difference in Dice coefficient across experiments.')
+end
+
+% Create the boxplots
+figure,
+boxplot(data, 'notch', 'on', 'Labels', {'Exp 1', 'Exp 2', 'Exp 3'});
+title([Name_Metric ' by Experiment']);
+xlabel('Experiment');
+ylabel(Name_Metric);
+grid on;
+if strcmp(Name_Metric,'Dice')
+    ylim([65 100]);
+else
+    ylim([1 5]);
+end
+saveas(gcf,Name_Metric,'epsc')
