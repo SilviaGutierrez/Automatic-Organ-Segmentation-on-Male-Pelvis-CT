@@ -83,8 +83,9 @@ function [diceResult,haussdorffResult,IoUResult,TrainingTime,Time4Validation]=ma
 
        fprintf('Training network...\n');
         
-       [TrainingTime,path_folder_iteration]=train(TrainDs,lgraph, options,path,k);
+       [TrainingTime,path_folder_iteration]=train(TrainDs,lgraph,options,path,k);
        TrainingTime(k) = TrainingTime;
+
        fprintf('Training complete.\n\n');
 
         
