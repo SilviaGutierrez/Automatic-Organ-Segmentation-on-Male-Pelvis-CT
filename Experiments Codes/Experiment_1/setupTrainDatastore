@@ -1,0 +1,33 @@
+function Trainds = setupTrainDatastore(images,labels,augimages,auglabels)
+    % setupDatastore - Setup imageDatastore and pixelLabelDatastore for training.
+    %
+    % Syntax: ds = setupTrainDatastore(images, labels, path)
+    %
+    % Inputs:
+    %   images - Cell array of file paths to train images.
+    %   labels - Cell array of file paths to corresponding train labels.
+    %   augimages - Cell array of file paths to augmented train images.
+    %   auglabels - Cell array of file paths to corresponding augmented train labels.
+    %   path   - Path to the main experiment directory.
+    %
+    % Outputs:
+    %   ds - pixelLabelImageDatastore for training the deep learning model.
+    %
+    % This function creates imageDatastore for images and pixelLabelDatastore
+    % for corresponding labels, combining original and augmented data (if available).
+    
+    % Create imageDatastore for images
+    imgFiles = cat(1, images, augimages);  % Concatenate original and augmented image paths
+    imgDS = imageDatastore(imgFiles, 'FileExtensions', '.dcm', 'ReadFcn', @(x) dicomread(x));
+
+    % Create pixelLabelDatastore for labels
+    labelFiles = cat(1, labels, auglabels);  % Concatenate original and augmented label paths
+    classNames = ["Background", "Prostate"];  % Define class names
+    pixelLabelID = [0, 1];  % Define pixel label IDs
+    labelDS = pixelLabelDatastore(labelFiles, classNames, pixelLabelID, ...
+        'FileExtensions', '.dcm', 'ReadFcn', @(x) uint8(dicomread(x)));
+
+    % Create pixelLabelImageDatastore
+    Trainds = pixelLabelImageDatastore(imgDS, labelDS, 'OutputSize', [512, 512], ...
+        'ColorPreprocessing', 'gray2rgb');
+end

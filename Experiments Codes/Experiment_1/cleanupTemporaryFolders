@@ -1,0 +1,25 @@
+function cleanupTemporaryFolders(path)
+    % cleanupTemporaryFolders - Clean up temporary folders created during data augmentation.
+    %
+    % Syntax: cleanupTemporaryFolders(path)
+    %
+    % Inputs:
+    %   path - Path to the main experiment directory.
+    %
+    % This function removes any temporary folders or files created during
+    % data augmentation or other processes within the specified experiment directory.
+    
+    % Define names of temporary folders to be deleted
+    tempFolders = {'AugmentedTrainImages', 'AugmentedTrainLabels'};  % Add more if needed
+
+    % Loop through each temporary folder and delete it
+    for i = 1:numel(tempFolders)
+        tempFolderPath = fullfile(path, tempFolders{i});
+        if exist(tempFolderPath, 'dir')
+            rmdir(tempFolderPath, 's');  % Remove folder and all its contents
+            fprintf('Deleted temporary folder: %s\n', tempFolderPath);
+        else
+            fprintf('Temporary folder does not exist: %s\n', tempFolderPath);
+        end
+    end
+end
