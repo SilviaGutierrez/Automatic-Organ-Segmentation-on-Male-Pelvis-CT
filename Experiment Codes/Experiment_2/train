@@ -1,0 +1,14 @@
+function [TrainingTime,path_folder_iteration]=train(TrainDS, lgraph, options,path,k)
+        tic;
+        [net, ~] = trainNetwork(TrainDS, lgraph, options);
+        TrainingTime= toc;
+        fprintf('Training complete.\n\n');
+
+        % Save the trained network to disk
+        fprintf('Saving trained network...\n');
+        path_folder_iteration = fullfile(path, 'segmentation_results', ['iteration_', num2str(k)]);
+        if ~exist(path_folder_iteration, 'dir')
+            mkdir(path_folder_iteration);
+        end
+        save(fullfile(path_folder_iteration, 'trained_network.mat'), 'net');
+end

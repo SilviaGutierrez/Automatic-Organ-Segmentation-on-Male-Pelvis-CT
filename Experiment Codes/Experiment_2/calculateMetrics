@@ -1,0 +1,63 @@
+function [DiceResult, HaussdorffDist, Iou, validationTimes] = calculateMetrics(ValImagesDS, ValLabelsDS, path_folder_iteration)
+    % calculateMetrics - Calculate evaluation metrics for the trained network.
+    %
+    % Syntax: [diceResult, haussdorffDist, iou, validationTimes] = calculateMetrics(valLabels, valDs, path_folder_iteration)
+    %
+    % Inputs:
+    %   valLabels           - Cell array of file paths to validation labels.
+    %   valDs               - Validation pixelLabelImageDatastore.
+    %   path_folder_iteration - Path to the iteration folder containing trained network.
+    %
+    % Outputs:
+    %   diceResult      - Dice coefficients for each validation sample.
+    %   haussdorffDist  - Hausdorff distances for each validation sample.
+    %   iou             - Intersection over Union (IoU) for each validation sample.
+    %   validationTimes - Validation times (in seconds) for each validation sample.
+    %
+    % This function loads the trained network from disk, performs segmentation
+    % on the validation data using semanticseg, and calculates evaluation metrics
+    % (Dice, Hausdorff, IoU) for each validation sample using the predicted and
+    % ground truth labels. It also records the time taken for each validation sample.
+    
+    % Load the trained network from disk
+    loaded_net = load(fullfile(path_folder_iteration, 'trained_network.mat'));
+    net = loaded_net.net;
+
+    % Initialize arrays for metrics and validation times
+    numSamples = numel(ValImagesDS.Files);
+    DiceResult = zeros(numSamples, 2);
+    HaussdorffDist = zeros(numSamples, 1);
+    Iou = zeros(numSamples, 2);
+    validationTimes = zeros(numSamples, 2);
+
+    % Loop through validation data
+    for i = 1:numSamples
+        % Read validation image and label
+        img = readimage(ValImagesDS,i);
+        label = readimage(ValLabelsDS,i);
+        % Make a folder to save segmentation performe
+         
+         path_folder_segm = fullfile(path_folder_iteration);
+         if ~exist(path_folder_iteration,'dir')
+         mkdir(path_folder_segm);
+         end
+        % Perform segmentation using the trained network and measure time
+        tic;
+        predictedLabel = semanticseg(img, net);
+        
+        validationTimes(i) = toc;
+        filename = sprintf('predicted_label_%d.png', i); % Assuming loop_index is the loop counter
+
+        imwrite(uint8(predictedLabel),fullfile(path_folder_segm, filename));
+        % Calculate Dice coefficient
+        DiceResult(i,:) = dice(label, predictedLabel);
+
+        % Calculate Hausdorff distance 
+        HaussdorffDist(i) = HausdorffDist(double(label), double(predictedLabel));
+
+        % Calculate Intersection over Union (IoU)
+        Iou(i,:) = jaccard(label, predictedLabel);
+        
+    end
+    
+end

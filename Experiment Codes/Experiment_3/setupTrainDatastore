@@ -1,0 +1,45 @@
+function [TrainImagesDS,TrainLabelsDS,TrainDS]=setupTrainDatastore(subFolders_Images_Names,subFolders_Labels_Names,selectedIndices_Train,path,pathImagesDir,pathLabelsDir)
+% Select folders based on indices for training
+  selectedFolders_TrainImages = subFolders_Images_Names(selectedIndices_Train);
+  selectedFolders_TrainLabels = subFolders_Labels_Names(selectedIndices_Train);
+
+% Initialize cell arrays to store imageDatastores and pixelLabelDatastores
+  ImagesTrainDatastores = cell(1, numel(selectedFolders_TrainImages));
+  LabelsTrainDatastores = cell(1, numel(selectedFolders_TrainLabels));
+
+% Create imageDatastore and pixelLabelDatastore for each selected training folder
+for i = 1:numel(selectedFolders_TrainImages)
+    SelectedFolderPath_TrainImages = fullfile(pathImagesDir,     selectedFolders_TrainImages{i});
+    ImagesTrainDatastores{i} = imageDatastore(SelectedFolderPath_TrainImages,'FileExtensions','.dcm','ReadFcn',@(x) dicomread(x));
+    SelectedFolderPath_TrainLabels = fullfile(pathLabelsDir, selectedFolders_TrainLabels{i});
+    classNames=["Background","Bladder","Rectum","Prostate"]; % Define class names
+    pixelLabelID = [0, 1, 2, 3];  % Define pixel label IDs
+    LabelsTrainDatastores{i} = pixelLabelDatastore(SelectedFolderPath_TrainLabels,classNames,pixelLabelID,'FileExtensions','.dcm','ReadFcn',@(x) uint8(dicomread(x)));
+end
+
+% Combine all files from all imageDatastores and pixelLabelDatastores
+  allTrainFilesImages = {};
+  allTrainFilesLabels = {};
+for i = 1:numel(ImagesTrainDatastores)
+    allTrainFilesImages = [allTrainFilesImages; ImagesTrainDatastores{i}.Files]; 
+    allTrainFilesLabels = [allTrainFilesLabels; LabelsTrainDatastores{i}.Files];
+end
+
+% Create imageDatastore and pixelLabelDatastore for all combined files
+  TrainImagesDS=imageDatastore(allTrainFilesImages,'FileExtensions','.dcm','ReadFcn',@(x) dicomread(x));
+  TrainLabelsDS=pixelLabelDatastore(allTrainFilesLabels,classNames,pixelLabelID,'FileExtensions','.dcm','ReadFcn',@(x) uint8(dicomread(x)));
+
+% Perform Data Augmentation on Training Data performDataAugmentation(TrainImagesDS.Files, TrainLabelsDS.Files, path);
+  AugTrainImgDir=fullfile(path,'AugmentedTrainImages');
+  AugmTrainImgDs =imageDatastore(AugTrainImgDir,'FileExtensions','.dcm','ReadFcn',@(x)dicomread(x));
+  TrainImagesDS=imageDatastore(cat(1,TrainImagesDS.Files, AugmTrainImgDs.Files),'FileExtensions','.dcm','ReadFcn',@(x)dicomread(x));
+    
+  AugTrainLabDir=fullfile(path,'AugmentedTrainLabels');
+  AugmTrainLabDs = pixelLabelDatastore(AugTrainLabDir, classNames,pixelLabelID,'FileExtensions','.dcm','ReadFcn',@(x) uint8(dicomread(x)));
+  TrainLabelsDS=pixelLabelDatastore(cat(1,TrainLabelsDS.Files, AugmTrainLabDs.Files),classNames,pixelLabelID,'FileExtensions','.dcm','ReadFcn',@(x) uint8(dicomread(x)));
+
+% Create pixelLabelImageDatastore for training
+  imageSize=[512,512];
+  TrainDS = pixelLabelImageDatastore(TrainImagesDS,TrainLabelsDS,'OutputSize',imageSize,'ColorPreprocessing','gray2rgb');
+
+end
